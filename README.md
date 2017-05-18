@@ -4,6 +4,17 @@ Machine learning project for a driverless vehicle using TensorFlow
 
 ## WORK IN PROGRESS
 
+## Setting up environment
+Install [Anaconda](https://docs.continuum.io/)
+```
+conda create --name tensorflow python=3.5
+
+activate tensorflow
+
+conda install scipy
+conda install pandas
+pip install tensorflow-gpu
+```
 
 ## Built With
 
