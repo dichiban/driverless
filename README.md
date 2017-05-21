@@ -13,7 +13,11 @@ activate tensorflow
 
 conda install scipy
 conda install pandas
+conda install scikit-learn
+conda install matplotlib
+conda install -c https://conda.binstar.org/menpo opencv3
 pip install tensorflow-gpu
+pip install keras
 ```
 
 ## Built With
