@@ -35,5 +35,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * [Udacity](https://github.com/udacity/self-driving-car) For the dataset
-* [Sully Chen] (https://github.com/SullyChen/Autopilot-TensorFlow)
+* [Sully Chen](https://github.com/SullyChen/Autopilot-TensorFlow)
 
