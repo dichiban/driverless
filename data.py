@@ -18,7 +18,7 @@ def load_images_from_folder(folder):
     """
     images = []
     for filename in os.listdir(folder):
-        img = cv2.imread(os.path.join(folder, filename), 0)
+        img = cv2.imread(os.path.join(folder, filename))
         if img is not None:
             resized = cv2.resize(img, (100, 100))
             images.append(resized)
