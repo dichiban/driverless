@@ -7,17 +7,11 @@ Machine learning project for a driverless vehicle using TensorFlow
 ## Setting up environment
 Install [Anaconda](https://docs.continuum.io/)
 ```
-conda create --name tensorflow python=3.5
+conda env create -f environment.yml
 
 activate tensorflow
 
-conda install scipy
-conda install pandas
-conda install scikit-learn
-conda install matplotlib
-conda install -c https://conda.binstar.org/menpo opencv3
-pip install tensorflow-gpu
-pip install keras
+python train_keras.py
 ```
 
 ## Built With
@@ -36,4 +30,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 * [Udacity](https://github.com/udacity/self-driving-car) For the dataset
 * [Sully Chen](https://github.com/SullyChen/Autopilot-TensorFlow)
+* [Kevin Hughes](https://github.com/kevinhughes27/TensorKart)
 
