@@ -16,7 +16,9 @@ python train_keras.py
 
 ## Built With
 
-* [Tensorflow](https://www.tensorflow.org//) - The machien learning library used
+* [Tensorflow](https://www.tensorflow.org//)
+* [Keras](https://keras.io/)
+* [PyTorch](http://pytorch.org/)
 
 ## Author
 
@@ -28,6 +30,7 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 ## Acknowledgments
 
+* [Nvidia - End to End Learning for Self-Driving Cars](https://arxiv.org/pdf/1604.07316.pdf)
 * [Udacity](https://github.com/udacity/self-driving-car) For the dataset
 * [Sully Chen](https://github.com/SullyChen/Autopilot-TensorFlow)
 * [Kevin Hughes](https://github.com/kevinhughes27/TensorKart)
