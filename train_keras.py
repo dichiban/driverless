@@ -1,27 +1,22 @@
-import  numpy as np
+import matplotlib.pyplot as plt
+
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D
 from keras import optimizers
 from keras import backend as K
+from keras.utils import plot_model
 
 import data
 
-def customized_loss(y_true, y_pred, loss='elucidean'):
-    if loss == 'L2':
-        L2_norm_cost = 0.001
-        val = K.mean(K.square((y_pred - y_true)), axis=-1) \
-                    + K.sum(K.square(y_pred), axis=-1)/2 * L2_norm_cost
 
-    elif loss == 'elucidean':
-        val = K.sqrt(K.sum(K.square(y_pred-y_true), axis=-1))
-
-    return  val
+INPUT = (128, 128, 3)
 
 def create_model(keep_prob = 0.8):
     model = Sequential()
 
-    model.add(Conv2D(24, kernel_size=(5, 5), strides=(2, 2), activation='relu', input_shape=(100, 100, 3)))
+    # Nvidia end to end model with dropouts
+    model.add(Conv2D(24, kernel_size=(5, 5), strides=(2, 2), activation='relu', input_shape=INPUT))
     model.add(Conv2D(36, kernel_size=(5, 5), strides=(2, 2), activation='relu'))
     model.add(Conv2D(48, kernel_size=(5, 5), strides=(2, 2), activation='relu'))
     model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
@@ -36,16 +31,24 @@ def create_model(keep_prob = 0.8):
     model.add(Dropout(drop_out))
     model.add(Dense(10, activation='relu'))
     model.add(Dropout(drop_out))
-    model.add(Dense(1, activation='softsign'))
+    model.add(Dense(1, activation='tanh'))
 
     return model
+
+
+def elucidean_loss(y_true, y_pred):
+    loss = K.sqrt(K.sum(K.square(y_pred-y_true), axis=-1))
+    return loss
 
 def soft_acc(y_true, y_pred):
     return K.mean(K.equal(K.round(y_true), K.round(y_pred)))
 
+def mean_pred(y_true, y_pred):
+    return K.mean(y_pred)
+
 if __name__ == '__main__':
     # Load Training Data
-    x_train, x_valid, y_train, y_valid = data.load_data()
+    x_train, y_train= data.load_data()
 
     print(x_train.shape[0], 'train samples')
 
@@ -54,10 +57,38 @@ if __name__ == '__main__':
     batch_size = 50
 
     model = create_model()
-    model.compile(loss='mean_squared_error', optimizer=optimizers.adam(), metrics=[soft_acc])
-    model.fit(x_train, y_train, validation_data=(x_valid, y_valid), batch_size=batch_size, epochs=epochs, shuffle=True)
 
-    loss, acc = model.evaluate(x_valid, y_valid, verbose=0)
-    print('\nTesting loss: {}, acc: {}\n'.format(loss, acc))
+
+    sgd = optimizers.SGD(lr=0.0001)
+    adam = optimizers.Adam(lr=0.0001)
+
+    model.compile(loss=elucidean_loss, optimizer=adam, metrics=['accuracy', soft_acc])
+    history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
+
+    # Plot the accuracy + loss
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['soft_acc'])
+    plt.plot(history.history['val_acc'])
+    plt.plot(history.history['val_soft_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['accuracy', 'soft_accuracy', 'val_accuracy', 'val_soft_accuracy'], loc='upper left')
+    plt.savefig('model_accuracy.png')
+
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['loss', 'val_loss'], loc='upper left')
+    plt.savefig('model_loss.png')
+
+
+    #Save architecutre and weights
+    model_yaml = model.to_yaml()
+    with open("model.yaml", "w") as yaml_file:
+        yaml_file.write(model_yaml)
 
     model.save_weights('model_weights.h5')
+
