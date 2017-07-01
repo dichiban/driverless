@@ -1,18 +1,21 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D
 from keras import optimizers
 from keras import backend as K
-from keras.utils import plot_model
+
+from sklearn.model_selection import StratifiedKFold
+
 
 import data
 
 
 INPUT = (128, 128, 3)
 
-def create_model(keep_prob = 0.8):
+def create_model(keep_prob = 0.7):
     model = Sequential()
 
     # Nvidia end to end model with dropouts
@@ -36,15 +39,9 @@ def create_model(keep_prob = 0.8):
     return model
 
 
-def elucidean_loss(y_true, y_pred):
-    loss = K.sqrt(K.sum(K.square(y_pred-y_true), axis=-1))
-    return loss
+def acc(y_true, y_pred):
+    return 1 - K.sqrt(K.sum(K.square(y_pred-y_true), axis=-1))
 
-def soft_acc(y_true, y_pred):
-    return K.mean(K.equal(K.round(y_true), K.round(y_pred)))
-
-def mean_pred(y_true, y_pred):
-    return K.mean(y_pred)
 
 if __name__ == '__main__':
     # Load Training Data
@@ -52,43 +49,52 @@ if __name__ == '__main__':
 
     print(x_train.shape[0], 'train samples')
 
+    seed = 7
+    np.random.seed(seed)
+
     # Training loop variables
     epochs = 100
     batch_size = 50
 
-    model = create_model()
-
+    kfold = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
 
     sgd = optimizers.SGD(lr=0.0001)
     adam = optimizers.Adam(lr=0.0001)
 
-    model.compile(loss=elucidean_loss, optimizer=adam, metrics=['accuracy', soft_acc])
-    history = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
+    cvscores =[]
+
+    for i, (train, test) in enumerate(kfold.split(x_train, y_train)):
+        model = create_model()
+        model.compile(loss='mean_squared_error', optimizer=adam, metrics=[acc])
+        model.fit(x_train[train], y_train[train], batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
+
+        scores = model.evaluate(x_train[test], y_train[test], verbose=0)
+
+        print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+        cvscores.append(scores[1] * 100)
+
+        model_yaml = model.to_yaml()
+        with open("model"+str(i)+".yaml", "w") as yaml_file:
+            yaml_file.write(model_yaml)
+
+        model.save_weights('model_weights'+str(i)+'.h5')
+
+    for score in cvscores:
+        print(score)
 
     # Plot the accuracy + loss
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['soft_acc'])
-    plt.plot(history.history['val_acc'])
-    plt.plot(history.history['val_soft_acc'])
-    plt.title('model accuracy')
-    plt.ylabel('accuracy')
-    plt.xlabel('epoch')
-    plt.legend(['accuracy', 'soft_accuracy', 'val_accuracy', 'val_soft_accuracy'], loc='upper left')
-    plt.savefig('model_accuracy.png')
-
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
-    plt.title('model loss')
-    plt.ylabel('loss')
-    plt.xlabel('epoch')
-    plt.legend(['loss', 'val_loss'], loc='upper left')
-    plt.savefig('model_loss.png')
+    # plt.plot(history.history['acc'])
+    # plt.plot(history.history['soft_acc'])
+    # plt.plot(history.history['val_acc'])
+    # plt.plot(history.history['val_soft_acc'])
+    # plt.plot(history.history['loss'])
+    # plt.plot(history.history['val_loss'])
+    # plt.title('model accuracy/loss')
+    # plt.ylabel('accuracy')
+    # plt.xlabel('epoch')
+    # plt.legend(['accuracy', 'soft_accuracy', 'val_accuracy', 'val_soft_accuracy', 'loss', 'val_loss'])
+    # plt.savefig('model_accuracy_loss.png')
 
 
     #Save architecutre and weights
-    model_yaml = model.to_yaml()
-    with open("model.yaml", "w") as yaml_file:
-        yaml_file.write(model_yaml)
-
-    model.save_weights('model_weights.h5')
 
