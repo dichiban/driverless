@@ -7,7 +7,7 @@ import os
 
 IMAGE_LOCATION = "2017-06-29-1"
 DATA_LOCATION = "frame_data1.csv"
-
+IMAGE_SIZE = (128, 128)
 
 def load_images_from_folder(folder):
     """
@@ -80,7 +80,7 @@ def augment_data(img):
     x_start = int(len(img)*(0))
     x_end = int(len(img[0])*(1))
     #img = get_yellow(img)
-    aug = cv2.resize(img[y_start:y_end, x_start:x_end], (128, 128))
+    aug = cv2.resize(img[y_start:y_end, x_start:x_end], IMAGE_SIZE)
 
     return aug
 
@@ -95,7 +95,8 @@ def load_data():
     data_df = pd.read_csv(DATA_LOCATION)
 
     X = load_images_from_folder(IMAGE_LOCATION)
-    X = X.reshape(len(X), 128, 128, 3)
+    print(X.shape)
+    X = X.reshape(len(X), IMAGE_SIZE[0], IMAGE_SIZE[1], 3)
     y = data_df['throttle'].values
     y_min = min(y)
     y_max = max(y)
@@ -107,10 +108,11 @@ def load_data():
 
 def save_aug_images():
     x, y = load_data()
+    if not os.path.exists('aug_images'):
+        os.makedirs('aug_images')
 
     for i, img in enumerate(x):
         cv2.imwrite('aug_images/' + str(i) + '.jpg', img)
-
 
 # def get_latest_image(folder):
 #     """

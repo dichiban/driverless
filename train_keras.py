@@ -12,8 +12,9 @@ from sklearn.model_selection import StratifiedKFold
 
 import data
 
+IMAGE_SIZE = data.IMAGE_SIZE
 
-INPUT = (128, 128, 3)
+INPUT = (IMAGE_SIZE[0], IMAGE_SIZE[1], 3)
 
 def create_model(keep_prob = 0.7):
     model = Sequential()
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     np.random.seed(seed)
 
     # Training loop variables
-    epochs = 100
+    epochs = 20
     batch_size = 50
 
     adam = optimizers.Adam(lr=0.0001)

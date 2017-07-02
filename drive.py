@@ -5,6 +5,7 @@ import cv2
 
 from time import time
 
+IMAGE_SIZE = data.IMAGE_SIZE
 #ser = serial.Serial('/dev/ttyUSB0', 115200)
 
 yaml_file = open('IT_WORKS/model_no_aug.yaml', 'r')
@@ -28,7 +29,7 @@ def run_CV(warming):
     global frame
     s, im = cam.read()
     im = data.augment_data(im)
-    im = im.reshape((1, 128, 128, 3))
+    im = im.reshape((1, IMAGE_SIZE[0], IMAGE_SIZE[1], 3))
     y = model.predict(im)
     frame += 1
     y = data.norm_label(y, -1, 1, 1044, 1750)
