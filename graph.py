@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 
 
 # Load the model
-yaml_file = open('IT_WORKS/model0.yaml', 'r')
+yaml_file = open('model0.yaml', 'r')
 loaded_model_yaml = yaml_file.read()
 yaml_file.close()
 
 model = model_from_yaml(loaded_model_yaml)
-model.load_weights("IT_WORKS/model_weights0.h5")
+model.load_weights("model_weights0.h5")
 
 # Get the data values
 x, y = data.load_data()
