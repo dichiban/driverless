@@ -45,7 +45,7 @@ def acc(y_true, y_pred):
 
 if __name__ == '__main__':
     # Load Training Data
-    x_train, y_train= data.load_data()
+    x_train, y_train = data.load_data()
 
     print(x_train.shape[0], 'train samples')
 
@@ -56,32 +56,46 @@ if __name__ == '__main__':
     epochs = 100
     batch_size = 50
 
-    kfold = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
-
-    sgd = optimizers.SGD(lr=0.0001)
     adam = optimizers.Adam(lr=0.0001)
 
-    cvscores =[]
+    model = create_model()
+    model.compile(loss='mean_squared_error', optimizer=adam, metrics=[acc])
+    model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
 
-    for i, (train, test) in enumerate(kfold.split(x_train, y_train)):
-        model = create_model()
-        model.compile(loss='mean_squared_error', optimizer=adam, metrics=[acc])
-        model.fit(x_train[train], y_train[train], batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
+    model_yaml = model.to_yaml()
+    with open("model.yaml", "w") as yaml_file:
+        yaml_file.write(model_yaml)
+    model.save_weights('model_weights.h5')
 
-        scores = model.evaluate(x_train[test], y_train[test], verbose=0)
+    """
+    UNCOMMENT FOR FOLDS
+    """
+    # kfold = StratifiedKFold(n_splits=10, shuffle=True, random_state=seed)
+    #
+    # cvscores =[]
+    #
+    # for i, (train, test) in enumerate(kfold.split(x_train, y_train)):
+    #     model = create_model()
+    #     model.compile(loss='mean_squared_error', optimizer=adam, metrics=[acc])
+    #     model.fit(x_train[train], y_train[train], batch_size=batch_size, epochs=epochs, validation_split=0.2, shuffle=True)
+    #
+    #     scores = model.evaluate(x_train[test], y_train[test], verbose=0)
+    #
+    #     print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+    #     cvscores.append(scores[1] * 100)
+    #
+    #     model_yaml = model.to_yaml()
+    #     with open("model"+str(i)+".yaml", "w") as yaml_file:
+    #         yaml_file.write(model_yaml)
+    #
+    #     model.save_weights('model_weights'+str(i)+'.h5')
+    #
+    # for score in cvscores:
+    #     print(score)
 
-        print("%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
-        cvscores.append(scores[1] * 100)
-
-        model_yaml = model.to_yaml()
-        with open("model"+str(i)+".yaml", "w") as yaml_file:
-            yaml_file.write(model_yaml)
-
-        model.save_weights('model_weights'+str(i)+'.h5')
-
-    for score in cvscores:
-        print(score)
-
+    """
+    UNCOMMENT FOR LOSS/ACC GRAPHING
+    """
     # Plot the accuracy + loss
     # plt.plot(history.history['acc'])
     # plt.plot(history.history['soft_acc'])
