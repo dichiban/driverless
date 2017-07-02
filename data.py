@@ -5,8 +5,8 @@ import pandas as pd
 import os
 
 
-IMAGE_LOCATION = "2017-06-29-2"
-DATA_LOCATION = "frame_data2.csv"
+IMAGE_LOCATION = "2017-06-29-1"
+DATA_LOCATION = "frame_data1.csv"
 
 
 def load_images_from_folder(folder):
@@ -79,7 +79,7 @@ def augment_data(img):
     y_end = int(len(img)*(2/3))
     x_start = int(len(img)*(0))
     x_end = int(len(img[0])*(1))
-    img = get_yellow(img)
+    #img = get_yellow(img)
     aug = cv2.resize(img[y_start:y_end, x_start:x_end], (128, 128))
 
     return aug
@@ -104,6 +104,12 @@ def load_data():
     y = norm_label(y, y_min, y_max, -1, 1)
 
     return X, y
+
+def save_aug_images():
+    x, y = load_data()
+
+    for i, img in enumerate(x):
+        cv2.imwrite('aug_images/' + str(i) + '.jpg', img)
 
 
 # def get_latest_image(folder):
