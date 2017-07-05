@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import numpy as np
 
-import data
+import utils/data
 
 class CNNet(nn.Module):
 

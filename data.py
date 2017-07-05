@@ -5,9 +5,10 @@ import pandas as pd
 import os
 
 
-IMAGE_LOCATION = "2017-06-29-1"
-DATA_LOCATION = "frame_data1.csv"
+IMAGE_LOCATION = "data/AFTER_RACE/sorted/"
+DATA_LOCATION = "data/AFTER_RACE/frame_data.csv"
 IMAGE_SIZE = (128, 128)
+DEPTH = 3
 
 def load_images_from_folder(folder):
     """
@@ -24,6 +25,11 @@ def load_images_from_folder(folder):
             images.append(resized)
 
     return np.asarray(images)
+
+def norm_feature(x):
+    x = x/255
+
+    return x
 
 
 def norm_label(y, left_min, left_max, right_min, right_max):
@@ -75,11 +81,12 @@ def augment_data(img):
     :return:
     resized(128,128)/augmented image
     """
-    y_start = int(len(img)*(1/3))
-    y_end = int(len(img)*(2/3))
+    y_start = int(len(img)*(0))
+    y_end = int(len(img)*(1))
     x_start = int(len(img)*(0))
     x_end = int(len(img[0])*(1))
-    #img = get_yellow(img)
+    #img = hsv_aug(img)
+    #img = get_canny(img)
     aug = cv2.resize(img[y_start:y_end, x_start:x_end], IMAGE_SIZE)
 
     return aug
@@ -93,11 +100,15 @@ def load_data():
     y - corresponding training output data
     """
     data_df = pd.read_csv(DATA_LOCATION)
+    print(data_df['steering'].values)
+    y = data_df['steering'].replace(['rawRxMotor'], '1500').apply(int).values
+    #print(y)
 
     X = load_images_from_folder(IMAGE_LOCATION)
     print(X.shape)
-    X = X.reshape(len(X), IMAGE_SIZE[0], IMAGE_SIZE[1], 3)
-    y = data_df['throttle'].values
+    X = X.reshape(len(X), IMAGE_SIZE[0], IMAGE_SIZE[1], DEPTH)
+    #y = data_df['steering'].values
+
     y_min = min(y)
     y_max = max(y)
     print(y_min)
@@ -110,10 +121,65 @@ def save_aug_images():
     x, y = load_data()
     if not os.path.exists('aug_images'):
         os.makedirs('aug_images')
-
+    print("done, processing, now saving")
     for i, img in enumerate(x):
         cv2.imwrite('aug_images/' + str(i) + '.jpg', img)
 
+def hsv_aug(img):
+    # load the image (1 means colour)
+    frame = img
+
+    # The mask will run through each blue colour here
+    blues = [((95, 0, 220), (125, 50, 255)),
+             ((100, 140, 165), (110, 255, 205)),
+             ((95, 150, 150), (105, 255, 230)),
+             ((95, 200, 150), (110, 255, 190)),
+             ((100, 80, 95), (112, 220, 165)),
+             ((95, 150, 160), (110, 240, 250)),
+             ((105, 85, 85), (110, 240, 130))]
+
+    # The mask will run through each yellow colour here
+    yellows = [((20, 80, 200), (30, 130, 225)),
+               ((25, 60, 150), (35, 105, 200)),
+               ((25, 25, 180), (40, 70, 255)),
+               ((20, 55, 180), (30, 90, 245)),
+               ((10, 70, 130), (30, 120, 175)),
+               ((25, 35, 80), (60, 95, 150)),
+               ((30, 25, 165), (50, 60, 180)),
+               ((40, 10, 235), (95, 25, 250)),
+               ((95, 40, 170), (110, 130, 255)),
+               ((15, 10, 240), (32, 50, 255))]
+
+    # frame = adjust_gamma(frame, 1) # Ignore lel
+
+    # Convert the frame
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    # Apply first mask
+    shapeMask = cv2.inRange(hsv, (35, 0, 210), (60, 35, 230))
+
+    # Apply all of the yellow masks
+    for yellow in yellows:
+        shapeMask += cv2.inRange(hsv, yellow[0], yellow[1])
+
+    # Apply all of the blue masks
+    for blue in blues:
+        shapeMask += cv2.inRange(hsv, blue[0], blue[1])
+
+    # Erode/dilate the frame - helps to "push out" all the noise
+    shapeMask = cv2.erode(shapeMask, None, iterations=1)
+    shapeMask = cv2.dilate(shapeMask, None, iterations=3)
+
+    frame_color = cv2.bitwise_and(hsv, hsv, mask=shapeMask)
+    frame_color = cv2.addWeighted(frame_color, 1, frame_color, 1, 0)
+
+    # Show us the masked image and move it
+    # cv2.imshow(img[47:] + " Mask (color)", frame_color)
+    # cv2.moveWindow(img[47:] + " Mask (color)", 50, 100)
+
+    return frame_color
+
+#save_aug_images()
 # def get_latest_image(folder):
 #     """
 #     Obtain latest image from folder

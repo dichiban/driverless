@@ -8,9 +8,20 @@ Machine learning project for a driverless vehicle using TensorFlow
 Install [Anaconda](https://docs.continuum.io/)
 ```
 conda env create -f environment.yml
+```
 
-activate tensorflow
+For Linux
+```
+source activate keras
+```
 
+For Windows
+```
+activate keras
+```
+
+Start the training
+```
 python train_keras.py
 ```
 
@@ -22,7 +33,8 @@ python train_keras.py
 
 ## Author
 
-* **Daiki Ichiyama** - *Initial work* - [Dichiban](https://github.com/dichiban)
+* **Daiki Ichiyama** - [Dichiban](https://github.com/dichiban)
+* **Jaimyn Mayer** - [jabelone](https://github.com/jabelone)
 
 ## License
 
@@ -31,7 +43,6 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * [Nvidia - End to End Learning for Self-Driving Cars](https://arxiv.org/pdf/1604.07316.pdf)
-* [Udacity](https://github.com/udacity/self-driving-car) For the dataset
 * [Sully Chen](https://github.com/SullyChen/Autopilot-TensorFlow)
 * [Kevin Hughes](https://github.com/kevinhughes27/TensorKart)
 
